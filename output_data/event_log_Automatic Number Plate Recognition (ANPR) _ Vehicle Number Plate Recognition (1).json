@@ -1,0 +1,14 @@
+[
+  {
+    "vehicle_number": "KA02KN1828",
+    "event": "ENTRY",
+    "timestamp": "2026-08-10T11:10:28",
+    "camera": "camera_1"
+  },
+  {
+    "vehicle_number": "KA02MM9091",
+    "event": "ENTRY",
+    "timestamp": "2026-08-10T11:10:40",
+    "camera": "camera_1"
+  }
+]

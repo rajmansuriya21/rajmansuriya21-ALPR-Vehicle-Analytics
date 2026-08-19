@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vehicle Analytics Dashboard | ALPR System</title>
+    <meta name="description" content="AI-powered vehicle entry/exit analytics dashboard with real-time license plate recognition">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header id="header">
+        <div class="header-left">
+            <div class="logo">
+                <span class="logo-icon">🚗</span>
+                <div>
+                    <h1>Vehicle Analytics</h1>
+                    <p class="subtitle">AI-Powered CCTV Monitoring System</p>
+                </div>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="status-badge" id="statusBadge">
+                <span class="status-dot"></span>
+                <span class="status-text">Idle</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main id="mainContent">
+        <!-- Control Bar -->
+        <section class="control-bar" id="controlBar">
+            <div class="control-group">
+                <button class="btn btn-primary" id="btnProcess" onclick="startProcessing()">
+                    <span class="btn-icon">▶</span> Start Processing
+                </button>
+                <button class="btn btn-danger" id="btnStop" onclick="stopProcessing()" disabled>
+                    <span class="btn-icon">■</span> Stop
+                </button>
+                <label class="btn btn-secondary" id="btnUpload">
+                    <span class="btn-icon">📁</span> Upload Video
+                    <input type="file" accept="video/*" onchange="uploadVideo(this)" hidden>
+                </label>
+            </div>
+            <div class="progress-container" id="progressContainer" style="display:none;">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <span class="progress-text" id="progressText">0%</span>
+            </div>
+        </section>
+
+        <!-- Stats Cards -->
+        <section class="stats-grid" id="statsGrid">
+            <div class="stat-card stat-entries">
+                <div class="stat-icon">🟢</div>
+                <div class="stat-info">
+                    <span class="stat-value" id="statEntries">0</span>
+                    <span class="stat-label">Total Entries</span>
+                </div>
+            </div>
+            <div class="stat-card stat-exits">
+                <div class="stat-icon">🔴</div>
+                <div class="stat-info">
+                    <span class="stat-value" id="statExits">0</span>
+                    <span class="stat-label">Total Exits</span>
+                </div>
+            </div>
+            <div class="stat-card stat-inside">
+                <div class="stat-icon">🏢</div>
+                <div class="stat-info">
+                    <span class="stat-value" id="statInside">0</span>
+                    <span class="stat-label">Vehicles Inside</span>
+                </div>
+            </div>
+            <div class="stat-card stat-unique">
+                <div class="stat-icon">🔑</div>
+                <div class="stat-info">
+                    <span class="stat-value" id="statUnique">0</span>
+                    <span class="stat-label">Unique Vehicles</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Grid: Video + Events -->
+        <section class="content-grid">
+            <!-- Video Panel -->
+            <div class="panel video-panel" id="videoPanel">
+                <div class="panel-header">
+                    <h2>📹 Live Processing Feed</h2>
+                </div>
+                <div class="panel-body">
+                    <div class="video-container" id="videoContainer">
+                        <div class="video-placeholder" id="videoPlaceholder">
+                            <span class="placeholder-icon">📷</span>
+                            <p>Click "Start Processing" to begin</p>
+                            <p class="placeholder-sub">Annotated frames will appear here in real-time</p>
+                        </div>
+                        <img id="videoFrame" class="video-frame" style="display:none;" alt="Processing frame">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Event Feed Panel -->
+            <div class="panel event-panel" id="eventPanel">
+                <div class="panel-header">
+                    <h2>📋 Event Feed</h2>
+                    <span class="event-count" id="eventCount">0 events</span>
+                </div>
+                <div class="panel-body">
+                    <div class="event-list" id="eventList">
+                        <div class="event-empty">No events detected yet</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Analytics Section -->
+        <section class="analytics-section">
+            <!-- Timeline Chart -->
+            <div class="panel chart-panel" id="chartPanel">
+                <div class="panel-header">
+                    <h2>📊 Event Timeline</h2>
+                </div>
+                <div class="panel-body">
+                    <canvas id="timelineChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Visit History Table -->
+            <div class="panel table-panel" id="tablePanel">
+                <div class="panel-header">
+                    <h2>📄 Visit History</h2>
+                </div>
+                <div class="panel-body">
+                    <div class="table-wrapper">
+                        <table id="visitTable">
+                            <thead>
+                                <tr>
+                                    <th>Vehicle Number</th>
+                                    <th>Entry Time</th>
+                                    <th>Exit Time</th>
+                                    <th>Duration</th>
+                                    <th>Visit #</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="visitTableBody">
+                                <tr><td colspan="6" class="table-empty">No visit records yet</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- AI Analytics Report -->
+        <section class="panel ai-panel" id="aiPanel">
+            <div class="panel-header">
+                <h2>🤖 AI Analytics Report</h2>
+                <button class="btn btn-sm" id="btnRefreshAi" onclick="loadAnalytics()">Refresh</button>
+            </div>
+            <div class="panel-body">
+                <div class="ai-report" id="aiReport">
+                    <p class="report-placeholder">AI analytics report will be generated after processing completes.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Downloads -->
+        <section class="downloads-section" id="downloadsSection">
+            <div class="panel-header">
+                <h2>📥 Download Reports</h2>
+            </div>
+            <div class="download-grid">
+                <a class="download-card" href="/api/download/video" id="dlVideo">
+                    <span class="dl-icon">🎬</span>
+                    <span class="dl-label">Annotated Video</span>
+                    <span class="dl-ext">.mp4</span>
+                </a>
+                <a class="download-card" href="/api/download/json" id="dlJson">
+                    <span class="dl-icon">📄</span>
+                    <span class="dl-label">Event Log</span>
+                    <span class="dl-ext">.json</span>
+                </a>
+                <a class="download-card" href="/api/download/csv" id="dlCsv">
+                    <span class="dl-icon">📊</span>
+                    <span class="dl-label">Visit Report</span>
+                    <span class="dl-ext">.csv</span>
+                </a>
+                <a class="download-card" href="/api/download/analytics" id="dlAi">
+                    <span class="dl-icon">🤖</span>
+                    <span class="dl-label">AI Report</span>
+                    <span class="dl-ext">.md</span>
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p>Vehicle Entry & Exit Analytics System — Powered by YOLOv8 + PaddleOCR + Gemini AI</p>
+    </footer>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
